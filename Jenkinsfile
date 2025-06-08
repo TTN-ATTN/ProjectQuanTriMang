@@ -55,26 +55,28 @@ pipeline {
         }
 
         
-        stage('Test Docker Image') {
-            steps {
-                script {
-                    bat '''
-                       
-                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" run -d --name test-container -p 8001:8000 localhost:5000/my-fastapi-app:latest
-                        
-                     
-                        sleep 10
-                        
-                      
-                        curl -f http://localhost:8001/health || exit 1
-                        
-                   
-                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" stop test-container
-                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" rm test-container
-                    '''
+       stage('Test Docker Image') {
+                steps {
+                    script {
+                        bat '''
+                            "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" run -d --name test-container -p 8001:8000 localhost:5000/my-fastapi-app:latest
+                            
+                            timeout /t 10 /nobreak >nul
+                            
+                            curl -f http://localhost:8001/health || (
+                                echo Health check failed!
+                                "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" stop test-container
+                                "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" rm test-container
+                                exit /b 1
+                            )
+                            
+                            "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" stop test-container
+                            "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" rm test-container
+                        '''
+                    }
                 }
             }
-        }
+
         
         stage('Push to Registry') {
             when {
