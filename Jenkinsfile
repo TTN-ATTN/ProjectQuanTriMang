@@ -46,13 +46,14 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    bat '''
+                    bat """
                     "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" build -t ${DOCKER_IMAGE}:${DOCKER_TAG} .
                     "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:${DOCKER_TAG}
-                    '''
+                    """
                 }
             }
         }
+
 
         
        stage('Test Docker Image') {
