@@ -1,9 +1,8 @@
 pipeline {
-    // Modified agent section - Add Docker configuration here
     agent {
         docker {
             image 'python:3.11-slim'
-            args '-u root -v /var/run/docker.sock:/var/run/docker.sock'  // Root for package installs + Docker-in-Docker
+            args '-u root -v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
     
@@ -22,57 +21,39 @@ pipeline {
         
         stage('Install Dependencies') {
             steps {
-                script {
-                    sh '''
-                        pip install --upgrade pip
-                        pip install -r requirements.txt
-                    '''
-                }
+                sh '''
+                    pip install --upgrade pip
+                    pip install -r requirements.txt
+                '''
             }
         }
-        
         
         stage('Run Tests') {
             steps {
-                script {
-                    sh '''
-                        echo "Running tests..."
-                        python -c "import requests; print('Dependencies installed successfully')"
-                    '''
-                }
+                sh '''
+                    python -c "import requests; print('Dependencies installed successfully')"
+                '''
             }
         }
-
         
         stage('Build Docker Image') {
             steps {
-                script {
-                    sh '''
-                        docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} .
-                        docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest
-                    '''
-                }
+                sh '''
+                    docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} .
+                    docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest
+                '''
             }
         }
         
         stage('Test Docker Image') {
             steps {
-                script {
-                    sh '''
-                        # Run container in background
-                        docker run -d --name test-container -p 8001:8000 ${DOCKER_IMAGE}:${DOCKER_TAG}
-                        
-                        # Wait for container to start
-                        sleep 10
-                        
-                        # Test health endpoint
-                        curl -f http://localhost:8001/health || exit 1
-                        
-                        # Cleanup
-                        docker stop test-container
-                        docker rm test-container
-                    '''
-                }
+                sh '''
+                    docker run -d --name test-container -p 8001:8000 ${DOCKER_IMAGE}:${DOCKER_TAG}
+                    sleep 10
+                    curl -f http://localhost:8001/health || exit 1
+                    docker stop test-container
+                    docker rm test-container
+                '''
             }
         }
         
@@ -81,34 +62,11 @@ pipeline {
                 branch 'main'
             }
             steps {
-                script {
+                withCredentials([usernamePassword(credentialsId: 'docker-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     sh '''
-                        # Login to Docker registry (configure credentials in Jenkins)
-                        # docker login ${DOCKER_REGISTRY}
-                        
-                        # Tag and push images
-                        # docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}
-                        # docker tag ${DOCKER_IMAGE}:latest ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:latest
-                        # docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}
-                        # docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:latest
-                        
-                        echo "Skipping push to registry (configure your registry settings)"
-                    '''
-                }
-            }
-        }
-        
-        stage('Deploy') {
-            when {
-                branch 'main'
-            }
-            steps {
-                script {
-                    sh '''
-                        # Deploy to your environment
-                        # Example: kubectl apply -f k8s/
-                        # Example: docker-compose up -d
-                        echo "Deployment step - configure based on your infrastructure"
+                        echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin ${DOCKER_REGISTRY}
+                        docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}
+                        docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}
                     '''
                 }
             }
@@ -117,18 +75,16 @@ pipeline {
     
     post {
         always {
-            // Clean up
-            sh '''
-                docker rmi ${DOCKER_IMAGE}:${DOCKER_TAG} || true
-                docker rmi ${DOCKER_IMAGE}:latest || true
-            '''
-        }
-        success {
-            echo 'Pipeline succeeded!'
-        }
-        failure {
-            echo 'Pipeline failed!'
+            script {
+                try {
+                    sh 'docker stop test-container || true'
+                    sh 'docker rm test-container || true'
+                    sh 'docker rmi ${DOCKER_IMAGE}:${DOCKER_TAG} || true'
+                } catch (Exception e) {
+                    echo "Cleanup failed: ${e.getMessage()}"
+                }
+            }
+            echo "Pipeline completed - result: ${currentBuild.currentResult}"
         }
     }
 }
-
