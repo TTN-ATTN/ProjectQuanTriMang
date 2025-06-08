@@ -36,15 +36,13 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        . venv/bin/activate
-                        # Add your test commands here
-                        # Example: python -m pytest tests/
                         echo "Running tests..."
                         python -c "import requests; print('Dependencies installed successfully')"
                     '''
                 }
             }
         }
+
         
         stage('Build Docker Image') {
             steps {
