@@ -28,7 +28,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 sh '''
-                    python -c "import requests; print('Dependencies installed successfully')"
+                    python3 -c "import requests; print('Dependencies installed successfully')"
                 '''
             }
         }
