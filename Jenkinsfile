@@ -60,7 +60,7 @@ pipeline {
                 script {
                     bat '''
                        
-                        docker run -d --name test-container -p 8001:8000 ${DOCKER_IMAGE}:${DOCKER_TAG}
+                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" run -d --name test-container -p 8001:8000 ${DOCKER_IMAGE}:${DOCKER_TAG}
                         
                      
                         sleep 10
@@ -69,8 +69,8 @@ pipeline {
                         curl -f http://localhost:8001/health || exit 1
                         
                    
-                        docker stop test-container
-                        docker rm test-container
+                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" stop test-container
+                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" rm test-container
                     '''
                 }
             }
