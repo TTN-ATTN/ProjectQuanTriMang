@@ -56,13 +56,13 @@ pipeline {
 
 
         
-       stage('Test Docker Image') {
+                stage('Test Docker Image') {
                 steps {
                     script {
-                        bat '''
+                        bat """
                             "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" run -d --name test-container -p 8001:8000 localhost:5000/my-fastapi-app:latest
                             
-                            timeout /t 10 /nobreak >nul
+                            timeout /t 10 /nobreak
                             
                             curl -f http://localhost:8001/health || (
                                 echo Health check failed!
@@ -73,33 +73,34 @@ pipeline {
                             
                             "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" stop test-container
                             "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" rm test-container
-                        '''
+                        """
                     }
                 }
             }
 
-        
-        stage('Push to Registry') {
-            when {
-                branch 'Hieu_branch'
-            }
-            steps {
-                script {
-                    bat """
-                        REM Login to your private registry (if needed, configure credentials in Jenkins or skip if no auth)
-                        REM echo your_password | docker login localhost:5000 --username your_username --password-stdin
-                        
-                        REM Tag the images with the registry prefix
-                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}
-                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" tag ${DOCKER_IMAGE}:latest ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:latest
-                        
-                        REM Push the tagged images to your private registry
-                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}
-                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:latest
-                    """
+            stage('Push to Registry') {
+                when {
+                    branch 'Hieu_branch'
+                }
+                steps {
+                    script {
+                        bat """
+                            REM Login to your private registry (if needed, configure credentials in Jenkins or skip if no auth)
+                            REM echo your_password | docker login localhost:5000 --username your_username --password-stdin
+                            
+                            REM Tag the images with the registry prefix
+                            "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}
+                            "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" tag ${DOCKER_IMAGE}:latest ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:latest
+                            
+                            REM Push the tagged images to your private registry
+                            "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}
+                            "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:latest
+                        """
+                    }
                 }
             }
-        }
+
+
 
         
         stage('Deploy') {
