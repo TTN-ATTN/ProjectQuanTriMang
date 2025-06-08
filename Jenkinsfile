@@ -76,13 +76,9 @@ pipeline {
     post {
         always {
             script {
-                try {
-                    sh 'docker stop test-container || true'
-                    sh 'docker rm test-container || true'
-                    sh 'docker rmi ${DOCKER_IMAGE}:${DOCKER_TAG} || true'
-                } catch (Exception e) {
-                    echo "Cleanup failed: ${e.getMessage()}"
-                }
+                sh 'docker stop test-container || true'
+                sh 'docker rm test-container || true'
+                sh 'docker rmi ${DOCKER_IMAGE}:${DOCKER_TAG} || true'
             }
             echo "Pipeline completed - result: ${currentBuild.currentResult}"
         }
