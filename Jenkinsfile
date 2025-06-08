@@ -1,10 +1,16 @@
 pipeline {
-    agent any
+    // Modified agent section - Add Docker configuration here
+    agent {
+        docker {
+            image 'python:3.11-slim'
+            args '-u root -v /var/run/docker.sock:/var/run/docker.sock'  // Root for package installs + Docker-in-Docker
+        }
+    }
     
     environment {
         DOCKER_IMAGE = 'fastapi-static-website'
         DOCKER_TAG = "${BUILD_NUMBER}"
-        DOCKER_REGISTRY = 'your-registry.com' // Replace with your Docker registry
+        DOCKER_REGISTRY = 'your-registry.com'
     }
     
     stages {
@@ -18,16 +24,13 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        sudo apt-get update
-                        sudo apt-get install -y python3-venv
-                        python3 -m venv venv
-                        . venv/bin/activate
                         pip install --upgrade pip
                         pip install -r requirements.txt
                     '''
                 }
             }
         }
+        
         
         stage('Run Tests') {
             steps {
