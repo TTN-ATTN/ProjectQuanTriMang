@@ -17,7 +17,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 script {
-                    sh '''
+                    bat '''
                         python3 -m venv venv
                         . venv/bin/activate
                         pip install --upgrade pip
@@ -30,7 +30,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    sh '''
+                    bat '''
                         . venv/bin/activate
                         # Add your test commands here
                         # Example: python -m pytest tests/
@@ -44,7 +44,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh '''
+                    bat '''
                      docker build -t localhost:5000/my-fastapi-app:latest .
                      docker tag localhost:5000/my-fastapi-app:latest localhost:5000/my-fastapi-app:latest
                     '''
@@ -55,7 +55,7 @@ pipeline {
         stage('Test Docker Image') {
             steps {
                 script {
-                    sh '''
+                    bat '''
                         # Run container in background
                         docker run -d --name test-container -p 8001:8000 ${DOCKER_IMAGE}:${DOCKER_TAG}
                         
@@ -79,7 +79,7 @@ pipeline {
             }
             steps {
                 script {
-                    sh '''
+                    bat '''
                         # Login to Docker registry (configure credentials in Jenkins)
                         # docker login ${DOCKER_REGISTRY}
                         
@@ -101,7 +101,7 @@ pipeline {
             }
             steps {
                 script {
-                    sh '''
+                    bat '''
                   
                         echo "Deployment step - configure based on your infrastructure"
                     '''
@@ -113,7 +113,7 @@ pipeline {
     post {
         always {
             // Clean up
-            sh '''
+            bat '''
                 docker rmi ${DOCKER_IMAGE}:${DOCKER_TAG} || true
                 docker rmi ${DOCKER_IMAGE}:latest || true
             '''
