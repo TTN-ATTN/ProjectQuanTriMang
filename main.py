@@ -28,6 +28,10 @@ async def contact_page(request: Request):
 async def health_check():
     return {"status": "healthy", "message": "FastAPI Static Website is running"}
 
+@app.get("/new-api")
+async def new_api():
+    return {"message": "This is a new API endpoint"}
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
 
