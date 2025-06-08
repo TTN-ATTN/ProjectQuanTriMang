@@ -53,28 +53,28 @@ pipeline {
 
 
         
-                stage('Test Docker Image') {
-                steps {
-                    script {
-                        bat """
-                            "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" run -d --name test-container -p 8001:8000 localhost:5000/my-fastapi-app:latest
-                            
-                            powershell -Command "Start-Sleep -Seconds 10"
+            stage('Test Docker Image') {
+            steps {
+                script {
+                    bat """
+                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" run -d --name test-container -p 8001:8000 localhost:5000/my-fastapi-app:latest
+                        
+                        powershell -Command "Start-Sleep -Seconds 10"
 
-                            
-                            curl -f http://localhost:8001/health || (
-                                echo Health check failed!
-                                "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" stop test-container
-                                "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" rm test-container
-                                exit /b 1
-                            )
-                            
+                        
+                        curl -f http://localhost:8001/health || (
+                            echo Health check failed!
                             "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" stop test-container
                             "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" rm test-container
-                        """
-                    }
+                            exit /b 1
+                        )
+                        
+                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" stop test-container
+                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" rm test-container
+                    """
                 }
             }
+        }
 
             stage('Push to Registry') {
                 // when {
@@ -88,11 +88,11 @@ pipeline {
                             
                             REM Tag the images with the registry prefix
                             "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}
-                            "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" tag ${DOCKER_IMAGE}:latest ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:latest
+                        
                             
                             REM Push the tagged images to your private registry
                             "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}
-                            "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:latest
+
                         """
                     }
                 }
@@ -118,16 +118,7 @@ pipeline {
             }
         }
 
-        // filepath: d:\ATTN2023\Network administration\ProjectQuanTriMang\Jenkinsfile
-        // filepath: d:\ATTN2023\Network administration\ProjectQuanTriMang\Jenkinsfile
-            stage('Debug Info') {
-                steps {
-                    script {
-                        bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" ps -a'
-                        bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" logs running-app || exit /b 0'
-                    }
-                }
-            }
+        
 
     }
     
