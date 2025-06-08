@@ -33,9 +33,8 @@ pipeline {
             steps {
                 script {
                     bat '''
-                        . venv/bin/activate
-                        # Add your test commands here
-                        # Example: python -m pytest tests/
+                        venv/bin/activate
+                    
                         echo "Running tests..."
                         python -c "import requests; print('Dependencies installed successfully')"
                     '''
