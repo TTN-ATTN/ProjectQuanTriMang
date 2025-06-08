@@ -75,6 +75,17 @@ pipeline {
             }
         }
 
+        stage('Deploy') {
+            steps {
+                sh '''
+                    echo "Deploying container..."
+                    docker stop deployed-container || true
+                    docker rm deployed-container || true
+                    docker pull ${DOCKER_REGISTRY}/${DOCKER_REPO}:${DOCKER_TAG}
+                    docker run -d --name deployed-container -p 8000:8000 ${DOCKER_REGISTRY}/${DOCKER_REPO}:${DOCKER_TAG}
+                '''
+            }
+        }
     }
     
     post {
