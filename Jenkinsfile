@@ -47,12 +47,13 @@ pipeline {
             steps {
                 script {
                     bat '''
-                     docker build -t localhost:5000/my-fastapi-app:latest .
-                     docker tag localhost:5000/my-fastapi-app:latest localhost:5000/my-fastapi-app:latest
+                    "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" build -t localhost:5000/my-fastapi-app:latest .
+                    "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" tag localhost:5000/my-fastapi-app:latest localhost:5000/my-fastapi-app:latest
                     '''
                 }
             }
         }
+
         
         stage('Test Docker Image') {
             steps {
