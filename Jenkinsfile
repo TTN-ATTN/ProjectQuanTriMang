@@ -62,7 +62,8 @@ pipeline {
                         bat """
                             "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" run -d --name test-container -p 8001:8000 localhost:5000/my-fastapi-app:latest
                             
-                            timeout /t 10 /nobreak
+                            powershell -Command "Start-Sleep -Seconds 10"
+
                             
                             curl -f http://localhost:8001/health || (
                                 echo Health check failed!
