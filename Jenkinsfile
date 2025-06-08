@@ -4,8 +4,11 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'fastapi-static-website'
         DOCKER_TAG = "${BUILD_NUMBER}"
-        DOCKER_REGISTRY = 'docker.io/trantrungnhan'
+        DOCKER_USERNAME = 'trantrungnhan'
+        DOCKER_REGISTRY = 'docker.io'
+        DOCKER_REPO = 'trantrungnhan/fastapi-static-website'
     }
+
     
     stages {
         stage('Checkout') {
@@ -57,7 +60,6 @@ pipeline {
         stage('Push to Registry') {
             steps {
                 script {
-                    // Use Jenkins credentials binding
                     withCredentials([usernamePassword(
                         credentialsId: 'docker-registry-creds',
                         usernameVariable: 'DOCKER_USER',
@@ -65,13 +67,14 @@ pipeline {
                     )]) {
                         sh '''
                             echo "${DOCKER_PASS}" | docker login ${DOCKER_REGISTRY} -u ${DOCKER_USER} --password-stdin
-                            docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}
-                            docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}
+                            docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_REGISTRY}/${DOCKER_REPO}:${DOCKER_TAG}
+                            docker push ${DOCKER_REGISTRY}/${DOCKER_REPO}:${DOCKER_TAG}
                         '''
                     }
                 }
             }
         }
+
     }
     
     post {
