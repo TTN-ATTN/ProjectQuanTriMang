@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'fastapi-static-website'
         DOCKER_TAG = "${BUILD_NUMBER}"
-        DOCKER_REGISTRY = 'your-registry.com'
+        DOCKER_REGISTRY = 'dockerhub.io/trantrungnhan'
     }
     
     stages {
@@ -55,23 +55,23 @@ pipeline {
         }
         
         stage('Push to Registry') {
-    steps {
-        script {
-            // Use Jenkins credentials binding
-            withCredentials([usernamePassword(
-                credentialsId: 'docker-registry-creds',
-                usernameVariable: 'DOCKER_USER',
-                passwordVariable: 'DOCKER_PASS'
-            )]) {
-                sh '''
-                    echo "${DOCKER_PASS}" | docker login ${DOCKER_REGISTRY} -u ${DOCKER_USER} --password-stdin
-                    docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}
-                    docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}
-                '''
+            steps {
+                script {
+                    // Use Jenkins credentials binding
+                    withCredentials([usernamePassword(
+                        credentialsId: 'docker-registry-creds',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )]) {
+                        sh '''
+                            echo "${DOCKER_PASS}" | docker login ${DOCKER_REGISTRY} -u ${DOCKER_USER} --password-stdin
+                            docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}
+                            docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}
+                        '''
+                    }
+                }
             }
         }
-    }
-}
     }
     
     post {
