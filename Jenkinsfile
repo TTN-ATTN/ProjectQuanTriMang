@@ -111,12 +111,17 @@ pipeline {
             steps {
                 script {
                     bat '''
-                  
-                        echo "Deployment step - configure based on your infrastructure"
+                        REM Stop and remove any existing container
+                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" stop running-app || exit /b 0
+                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" rm running-app || exit /b 0
+
+                        REM Run the actual production container
+                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" run -d --name running-app -p 5000:8000 localhost:5000/fastapi-static-website:latest
                     '''
                 }
             }
         }
+
     }
     
         post {
