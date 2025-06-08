@@ -123,6 +123,14 @@ pipeline {
         }
 
     }
+    // filepath: d:\ATTN2023\Network administration\ProjectQuanTriMang\Jenkinsfile
+        stage('Show Container Logs') {
+            steps {
+                script {
+                    bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" logs running-app || exit /b 0'
+                }
+            }
+        }
     
         post {
             always {
