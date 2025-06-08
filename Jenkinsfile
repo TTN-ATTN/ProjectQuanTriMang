@@ -3,10 +3,10 @@ pipeline {
     
     environment {
         DOCKER_IMAGE = 'fastapi-static-website'
-        DOCKER_TAG = "${BUILD_NUMBER}"
-        DOCKER_REGISTRY = 'your-registry.com' // Replace with your Docker registry
+        DOCKER_TAG = "lastest"
+        DOCKER_REGISTRY = 'localhost:5000' // Replace with your Docker registry
     }
-    
+
     stages {
         stage('Checkout') {
             steps {
@@ -45,8 +45,8 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} .
-                        docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest
+                     docker build -t localhost:5000/my-fastapi-app:latest .
+                     docker tag localhost:5000/my-fastapi-app:latest localhost:5000/my-fastapi-app:latest
                     '''
                 }
             }
@@ -102,9 +102,7 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        # Deploy to your environment
-                        # Example: kubectl apply -f k8s/
-                        # Example: docker-compose up -d
+                  
                         echo "Deployment step - configure based on your infrastructure"
                     '''
                 }
