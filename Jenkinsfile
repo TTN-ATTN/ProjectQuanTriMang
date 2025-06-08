@@ -106,6 +106,12 @@ pipeline {
                 script {
                     bat '''
                        
+                    REM Check if running-app exists, then stop and remove it
+                    docker ps -a --format "{{.Names}}" | findstr /i "^running-app$" >nul
+                    if %errorlevel%==0 (
+                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" stop running-app
+                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" rm running-app
+                    )
                         "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" run -d --name running-app -p 9999:8000 localhost:5000/fastapi-static-website:latest
                     '''
                 }
