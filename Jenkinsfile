@@ -59,16 +59,16 @@ pipeline {
             steps {
                 script {
                     bat '''
-                        # Run container in background
+                       
                         docker run -d --name test-container -p 8001:8000 ${DOCKER_IMAGE}:${DOCKER_TAG}
                         
-                        # Wait for container to start
+                     
                         sleep 10
                         
-                        # Test health endpoint
+                      
                         curl -f http://localhost:8001/health || exit 1
                         
-                        # Cleanup
+                   
                         docker stop test-container
                         docker rm test-container
                     '''
