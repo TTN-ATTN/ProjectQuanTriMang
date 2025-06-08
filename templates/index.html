@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Home - FastAPI Static Website{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="jumbotron bg-light p-5 rounded">
+            <h1 class="display-4">Welcome to FastAPI Static Website</h1>
+            <p class="lead">This is a simple static website built with FastAPI, perfect for practicing CI/CD pipelines with Jenkins and Docker.</p>
+            <hr class="my-4">
+            <p>This website demonstrates a basic FastAPI application serving static content with multiple pages and responsive design.</p>
+            <a class="btn btn-primary btn-lg" href="/about" role="button">Learn More</a>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">FastAPI</h5>
+                <p class="card-text">Modern, fast web framework for building APIs with Python based on standard Python type hints.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Docker Ready</h5>
+                <p class="card-text">Containerized application ready for deployment with Docker and orchestration tools.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">CI/CD Practice</h5>
+                <p class="card-text">Perfect starting point for practicing continuous integration and deployment with Jenkins.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

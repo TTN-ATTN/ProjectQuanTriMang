@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}About - FastAPI Static Website{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <h1>About This Project</h1>
+        <p class="lead">This FastAPI static website is designed as a learning tool for DevOps practices.</p>
+        
+        <h3>Features</h3>
+        <ul>
+            <li>FastAPI web framework</li>
+            <li>Static file serving</li>
+            <li>Jinja2 templating</li>
+            <li>Bootstrap responsive design</li>
+            <li>Docker containerization</li>
+            <li>Health check endpoint</li>
+            <li>Ready for CI/CD pipelines</li>
+        </ul>
+
+        <h3>Technology Stack</h3>
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <h5>Backend</h5>
+                <ul>
+                    <li>Python 3.11+</li>
+                    <li>FastAPI</li>
+                    <li>Uvicorn ASGI server</li>
+                    <li>Jinja2 templates</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h5>Frontend</h5>
+                <ul>
+                    <li>HTML5</li>
+                    <li>CSS3</li>
+                    <li>Bootstrap 5</li>
+                    <li>Vanilla JavaScript</li>
+                </ul>
+            </div>
+        </div>
+
+        <h3>CI/CD Ready</h3>
+        <p>This project includes:</p>
+        <ul>
+            <li>Dockerfile for containerization</li>
+            <li>Requirements.txt for dependency management</li>
+            <li>Health check endpoint for monitoring</li>
+            <li>Environment configuration</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+

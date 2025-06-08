@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Contact - FastAPI Static Website{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <h1>Contact Information</h1>
+        <p class="lead">This is a demo contact page for the FastAPI static website.</p>
+        
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <h3>Project Details</h3>
+                <p><strong>Purpose:</strong> CI/CD Learning Project</p>
+                <p><strong>Framework:</strong> FastAPI</p>
+                <p><strong>Deployment:</strong> Docker + Jenkins</p>
+                <p><strong>Status:</strong> <span class="badge bg-success">Active</span></p>
+            </div>
+            <div class="col-md-6">
+                <h3>Quick Links</h3>
+                <ul class="list-unstyled">
+                    <li><a href="/health" class="btn btn-outline-primary btn-sm mb-2">Health Check</a></li>
+                    <li><a href="/" class="btn btn-outline-secondary btn-sm mb-2">Back to Home</a></li>
+                    <li><a href="/about" class="btn btn-outline-info btn-sm mb-2">About Project</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="alert alert-info mt-4" role="alert">
+            <h4 class="alert-heading">Development Note</h4>
+            <p>This contact page is part of a demo application. In a real-world scenario, you would implement actual contact forms, email functionality, or integration with contact management systems.</p>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5>API Endpoints</h5>
+            </div>
+            <div class="card-body">
+                <ul>
+                    <li><code>GET /</code> - Home page</li>
+                    <li><code>GET /about</code> - About page</li>
+                    <li><code>GET /contact</code> - Contact page</li>
+                    <li><code>GET /health</code> - Health check endpoint</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
