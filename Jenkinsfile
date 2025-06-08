@@ -60,7 +60,7 @@ pipeline {
                 script {
                     bat '''
                        
-                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" run -d --name test-container -p 8001:8000 ${DOCKER_IMAGE}:${DOCKER_TAG}
+                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" run -d --name test-container -p 8001:8000 localhost:5000/my-fastapi-app:latest
                         
                      
                         sleep 10
