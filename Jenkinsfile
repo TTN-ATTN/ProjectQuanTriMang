@@ -33,7 +33,7 @@ pipeline {
             steps {
                 script {
                     bat '''
-                        venv/bin/activate
+                        call venv\\Scripts\\activate
                     
                         echo "Running tests..."
                         python -c "import requests; print('Dependencies installed successfully')"
@@ -104,9 +104,6 @@ pipeline {
 
         
         stage('Deploy') {
-            // when {
-            //     branch 'Hieu_branch'
-            // }
             steps {
                 script {
                     bat '''
@@ -116,6 +113,10 @@ pipeline {
 
                         REM Run the actual production container
                         "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" run -d --name running-app -p 9999:8000 localhost:5000/fastapi-static-website:latest
+                        IF %ERRORLEVEL% NEQ 0 (
+                            echo Docker run failed!
+                            exit /b %ERRORLEVEL%
+                        )
                     '''
                 }
             }
