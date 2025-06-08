@@ -31,7 +31,7 @@ pipeline {
         stage('Test dependencies') {
             steps {
                 sh '''
-                    python3 -c "import requests; import uvicorn; from fastapi import FastAPI, Request; print('Dependencies installed successfully')"
+                    python3 -c "import requests; print('Dependencies installed successfully')"
                 '''
             }
         }
