@@ -122,8 +122,7 @@ pipeline {
             }
         }
 
-    }
-    // filepath: d:\ATTN2023\Network administration\ProjectQuanTriMang\Jenkinsfile
+        // filepath: d:\ATTN2023\Network administration\ProjectQuanTriMang\Jenkinsfile
         stage('Show Container Logs') {
             steps {
                 script {
@@ -131,6 +130,8 @@ pipeline {
                 }
             }
         }
+
+    }
     
         post {
             always {
