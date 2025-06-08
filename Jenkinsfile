@@ -119,12 +119,16 @@ pipeline {
         }
     }
     
-            post {
+        post {
             always {
-                bat '''
-                    "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" rmi %DOCKER_IMAGE%:%DOCKER_TAG%
-                    if errorlevel 1 echo Failed to remove %DOCKER_IMAGE%:%DOCKER_TAG%, but continuing
-                '''
+                script {
+                    bat '''
+                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" stop test-container || exit /b 0
+                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" rm test-container || exit /b 0
+                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" rmi %DOCKER_IMAGE%:%DOCKER_TAG% || exit /b 0
+                    '''
+                }
+                echo "Pipeline completed - result: ${currentBuild.currentResult}"
             }
         }
 
