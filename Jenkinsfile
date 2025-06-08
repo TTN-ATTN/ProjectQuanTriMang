@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'fastapi-static-website'
         DOCKER_TAG = "${BUILD_NUMBER}"
-        DOCKER_REGISTRY = 'dockerhub.io/trantrungnhan'
+        DOCKER_REGISTRY = 'docker.io/trantrungnhan'
     }
     
     stages {
