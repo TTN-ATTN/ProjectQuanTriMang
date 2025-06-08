@@ -3,8 +3,8 @@ pipeline {
     
     environment {
         DOCKER_IMAGE = 'fastapi-static-website'
-        DOCKER_TAG = "lastest"
-        DOCKER_REGISTRY = 'localhost:5000' // Replace with your Docker registry
+        DOCKER_TAG = "latest"
+        DOCKER_REGISTRY = 'localhost:5000' 
     }
 
     stages {
