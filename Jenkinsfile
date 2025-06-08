@@ -80,9 +80,9 @@ pipeline {
             }
 
             stage('Push to Registry') {
-                when {
-                    branch 'Hieu_branch'
-                }
+                // when {
+                //     branch 'Hieu_branch'
+                // }
                 steps {
                     script {
                         bat """
@@ -105,9 +105,9 @@ pipeline {
 
         
         stage('Deploy') {
-            when {
-                branch 'Hieu_branch'
-            }
+            // when {
+            //     branch 'Hieu_branch'
+            // }
             steps {
                 script {
                     bat '''
