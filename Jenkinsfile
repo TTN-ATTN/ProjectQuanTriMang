@@ -47,8 +47,8 @@ pipeline {
             steps {
                 script {
                     bat '''
-                    "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" build -t localhost:5000/my-fastapi-app:latest .
-                    "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" tag localhost:5000/my-fastapi-app:latest localhost:5000/my-fastapi-app:latest
+                    "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" build -t ${DOCKER_IMAGE}:${DOCKER_TAG} .
+                    "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:${DOCKER_TAG}
                     '''
                 }
             }
@@ -80,25 +80,26 @@ pipeline {
         
         stage('Push to Registry') {
             when {
-                branch 'main'
+                branch 'Hieu_branch'
             }
             steps {
                 script {
-                    bat '''
-                        # Login to Docker registry (configure credentials in Jenkins)
-                        # docker login ${DOCKER_REGISTRY}
+                    bat """
+                        REM Login to your private registry (if needed, configure credentials in Jenkins or skip if no auth)
+                        REM echo your_password | docker login localhost:5000 --username your_username --password-stdin
                         
-                        # Tag and push images
-                        # docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}
-                        # docker tag ${DOCKER_IMAGE}:latest ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:latest
-                        # docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}
-                        # docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:latest
+                        REM Tag the images with the registry prefix
+                        docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}
+                        docker tag ${DOCKER_IMAGE}:latest ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:latest
                         
-                        echo "Skipping push to registry (configure your registry settings)"
-                    '''
+                        REM Push the tagged images to your private registry
+                        docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}
+                        docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:latest
+                    """
                 }
             }
         }
+
         
         stage('Deploy') {
             when {
