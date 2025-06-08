@@ -33,8 +33,6 @@ pipeline {
             steps {
                 script {
                     bat '''
-                        call venv\\Scripts\\activate
-                    
                         echo "Running tests..."
                         python -c "import requests; print('Dependencies installed successfully')"
                     '''
@@ -85,12 +83,17 @@ pipeline {
                 steps {
                     script {
                         bat """
-                        REM Tag the image with the registry prefix
-                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}
-
-                        REM Push the tagged image to your private registry
-                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}
-                    """
+                            REM Login to your private registry (if needed, configure credentials in Jenkins or skip if no auth)
+                            REM echo your_password | docker login localhost:5000 --username your_username --password-stdin
+                            
+                            REM Tag the images with the registry prefix
+                            "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}
+                            "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" tag ${DOCKER_IMAGE}:latest ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:latest
+                            
+                            REM Push the tagged images to your private registry
+                            "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}
+                            "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:latest
+                        """
                     }
                 }
             }
@@ -99,6 +102,9 @@ pipeline {
 
         
         stage('Deploy') {
+            // when {
+            //     branch 'Hieu_branch'
+            // }
             steps {
                 script {
                     bat '''
@@ -108,10 +114,6 @@ pipeline {
 
                         REM Run the actual production container
                         "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" run -d --name running-app -p 9999:8000 localhost:5000/fastapi-static-website:latest
-                        IF %ERRORLEVEL% NEQ 0 (
-                            echo Docker run failed!
-                            exit /b %ERRORLEVEL%
-                        )
                     '''
                 }
             }
