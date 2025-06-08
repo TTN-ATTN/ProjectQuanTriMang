@@ -38,24 +38,49 @@ pipeline {
             }
         }
         
-        stage('Clean Old Images') {
+        stage('Clean Old App Containers') {
             steps {
                 script {
                     bat """
-                        echo "Cleaning up old Docker images..."
+                        echo "Cleaning up old application containers..."
                         
-                        REM Stop and remove any existing containers with the same name
+                        REM Stop and remove any existing app containers ONLY
                         "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" stop running-app || exit /b 0
                         "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" rm running-app || exit /b 0
+                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" stop test-container || exit /b 0
+                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" rm test-container || exit /b 0
                         
-                        REM Remove dangling images (untagged images)
-                        for /f "tokens=*" %%i in ('"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" images -f "dangling=true" -q') do (
+                        REM Remove only our specific old images (NOT the registry!)
+                        for /f "tokens=*" %%i in ('"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" images ${DOCKER_IMAGE} -q 2^>nul') do (
                             "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" rmi %%i || exit /b 0
                         )
+                    """
+                }
+            }
+        }
+        
+        stage('Verify Registry') {
+            steps {
+                script {
+                    bat """
+                        echo "Checking if registry is running..."
                         
-                        REM Remove old versions of our specific image (keep only latest)
-                        for /f "skip=1 tokens=*" %%i in ('"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" images ${DOCKER_REGISTRY}/${DOCKER_IMAGE} --format "{{.ID}}"') do (
-                            "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" rmi %%i || exit /b 0
+                        REM Check if registry container is running
+                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" ps | findstr registry || (
+                            echo "Registry not running, starting it..."
+                            "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" start registry || (
+                                echo "Starting new registry container..."
+                                "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" run -d -p 5000:5000 --name registry registry:2
+                            )
+                        )
+                        
+                        REM Wait for registry to be ready
+                        timeout /t 5 /nobreak > nul
+                        
+                        REM Test registry connectivity
+                        curl -f http://localhost:5000/v2/ || (
+                            echo "Registry health check failed!"
+                            exit /b 1
                         )
                     """
                 }
@@ -67,7 +92,6 @@ pipeline {
                 script {
                     bat """
                     "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" build -t ${DOCKER_IMAGE}:${DOCKER_TAG} .
-                    "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:${DOCKER_TAG}
                     """
                 }
             }
@@ -77,12 +101,13 @@ pipeline {
             steps {
                 script {
                     bat """
-                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" run -d --name test-container -p 8001:8000 localhost:5000/my-fastapi-app:latest
+                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" run -d --name test-container -p 8001:8000 ${DOCKER_IMAGE}:${DOCKER_TAG}
                         
                         powershell -Command "Start-Sleep -Seconds 10"
 
                         curl -f http://localhost:8001/health || (
                             echo Health check failed!
+                            "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" logs test-container
                             "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" stop test-container
                             "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" rm test-container
                             exit /b 1
@@ -96,19 +121,15 @@ pipeline {
         }
 
         stage('Push to Registry') {
-            // when {
-            //     branch 'Hieu_branch'
-            // }
             steps {
                 script {
                     bat """
-                        REM Login to your private registry (if needed, configure credentials in Jenkins or skip if no auth)
-                        REM echo your_password | docker login localhost:5000 --username your_username --password-stdin
+                        echo "Tagging and pushing image to registry..."
                         
-                        REM Tag the images with the registry prefix
+                        REM Tag the image with the registry prefix
                         "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}
                     
-                        REM Push the tagged images to your private registry
+                        REM Push the tagged image to your private registry
                         "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}
                     """
                 }
@@ -119,29 +140,33 @@ pipeline {
             steps {
                 script {
                     bat '''
+                        echo "Deploying application..."
                         "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" run -d --name running-app -p 9999:8000 localhost:5000/fastapi-static-website:latest
+                        
+                        REM Wait a moment for container to start
+                        timeout /t 5 /nobreak > nul
+                        
+                        REM Verify deployment
+                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" ps | findstr running-app || (
+                            echo "Deployment failed - container not running"
+                            "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" logs running-app
+                            exit /b 1
+                        )
                     '''
                 }
             }
         }
 
-        stage('Post-Deploy Cleanup') {
+        stage('Selective Cleanup') {
             steps {
                 script {
                     bat """
-                        echo "Performing post-deploy cleanup..."
+                        echo "Performing selective cleanup..."
                         
-                        REM Remove unused images (not associated with any container)
-                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" image prune -f
-                        
-                        REM Remove unused volumes
-                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" volume prune -f
-                        
-                        REM Remove unused networks
-                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" network prune -f
-                        
-                        REM Optional: More aggressive cleanup - remove all unused containers, networks, images
-                        REM "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" system prune -f
+                        REM Remove only unused images (but preserve registry!)
+                        for /f "tokens=*" %%i in ('"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" images -f "dangling=true" -q') do (
+                            "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" rmi %%i || exit /b 0
+                        )
                         
                         echo "Cleanup completed"
                     """
@@ -156,12 +181,9 @@ pipeline {
                 bat '''
                     echo "Final cleanup in post section..."
                     
-                    REM Clean up test containers
+                    REM Clean up test containers only
                     "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" stop test-container || exit /b 0
                     "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" rm test-container || exit /b 0
-                    
-                    REM Remove build cache and temporary images
-                    "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" builder prune -f || exit /b 0
                 '''
             }
             echo "Pipeline completed - result: ${currentBuild.currentResult}"
@@ -172,14 +194,11 @@ pipeline {
                 bat '''
                     echo "Pipeline failed - performing emergency cleanup..."
                     
-                    REM Stop and remove any hanging containers
-                    for /f "tokens=*" %%i in ('"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" ps -aq') do (
-                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" stop %%i || exit /b 0
-                        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" rm %%i || exit /b 0
-                    )
-                    
-                    REM Clean up dangling images
-                    "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" image prune -f || exit /b 0
+                    REM Stop and remove only our app containers (NOT registry!)
+                    "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" stop running-app || exit /b 0
+                    "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" rm running-app || exit /b 0
+                    "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" stop test-container || exit /b 0
+                    "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" rm test-container || exit /b 0
                 '''
             }
         }
